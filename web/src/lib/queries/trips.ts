@@ -74,6 +74,7 @@ export function useAvailableDrivers() {
                 .select('*')
                 .eq('role', 'driver')
                 .eq('is_active', true)
+                .eq('is_available', true)
                 .order('full_name');
 
             if (error) throw error;
@@ -134,6 +135,7 @@ export function useAssignTrip() {
             // Invalidate related queries
             queryClient.invalidateQueries({ queryKey: TRIPS_KEY });
             queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+            queryClient.invalidateQueries({ queryKey: ['drivers'] });
         },
     });
 }

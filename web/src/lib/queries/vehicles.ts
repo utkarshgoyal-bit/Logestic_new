@@ -86,6 +86,10 @@ export function useCreateVehicle() {
             registration_number: string;
             vehicle_type: string;
             capacity_kg: number;
+            model?: string;
+            year?: number;
+            insurance_number?: string;
+            insurance_expiry?: string;
         }) => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
@@ -118,6 +122,10 @@ export function useCreateDriver() {
         mutationFn: async (newDriver: {
             full_name: string;
             phone: string;
+            email?: string;
+            age?: number;
+            license_number?: string;
+            remarks?: string;
         }) => {
             const { error: authError } = await supabase.auth.getUser();
             if (authError) throw new Error('Not authenticated');
@@ -130,7 +138,12 @@ export function useCreateDriver() {
                     full_name: newDriver.full_name,
                     phone: newDriver.phone,
                     role: 'driver',
-                    is_active: true
+                    is_active: true,
+                    // New fields
+                    email: newDriver.email,
+                    age: newDriver.age,
+                    license_number: newDriver.license_number,
+                    remarks: newDriver.remarks
                 })
                 .select()
                 .single();
@@ -142,6 +155,25 @@ export function useCreateDriver() {
             // Invalidate drivers query (if it exists, e.g. in trips or a dedicated drivers list)
             // Also invalidate vehicles just in case there's a relation, though mostly separate.
             queryClient.invalidateQueries({ queryKey: ['drivers'] });
+        },
+    });
+}
+
+// Fetch all drivers
+export function useDrivers() {
+    const supabase = createClient();
+
+    return useQuery({
+        queryKey: ['drivers'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'driver')
+                .order('full_name');
+
+            if (error) throw error;
+            return data;
         },
     });
 }

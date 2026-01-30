@@ -3,7 +3,8 @@
 import { FleetStatusTable } from '@/components/admin/FleetStatusTable';
 import { BookingRequestQueue } from '@/components/admin/BookingRequestQueue';
 import { ActiveTripsList } from '@/components/admin/ActiveTripsList';
-import { Gauge, TrendingUp, Truck, ClipboardCheck, Activity } from 'lucide-react';
+import { DriversTable } from '@/components/admin/DriversTable';
+import { Gauge, TrendingUp, Truck, ClipboardCheck, Activity, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRealtimeTrips, useRealtimeVehicles } from '@/lib/queries/realtime';
@@ -114,6 +115,10 @@ export default function AdminDashboard() {
                                     <Truck className="h-4 w-4" />
                                     Fleet Status
                                 </TabsTrigger>
+                                <TabsTrigger value="drivers" className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Drivers
+                                </TabsTrigger>
                                 <TabsTrigger value="active" className="flex items-center gap-2">
                                     <Activity className="h-4 w-4" />
                                     Active Shipments
@@ -124,6 +129,9 @@ export default function AdminDashboard() {
                         <div className="flex-1 overflow-auto pr-2">
                             <TabsContent value="fleet" className="mt-0 h-full">
                                 <FleetStatusTable />
+                            </TabsContent>
+                            <TabsContent value="drivers" className="mt-0 h-full">
+                                <DriversTable />
                             </TabsContent>
                             <TabsContent value="active" className="mt-0 h-full">
                                 <ActiveTripsList />

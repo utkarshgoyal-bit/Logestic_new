@@ -1,7 +1,8 @@
 'use client';
+// Force HMR update
 
 import { useState } from 'react';
-import { useCreateDriver } from '@/lib/queries/vehicles'; // We will add this export next
+import { useCreateDriver } from '@/lib/queries/vehicles';
 import {
     Dialog,
     DialogContent,
@@ -24,6 +25,10 @@ interface AddDriverModalProps {
 export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [age, setAge] = useState('');
+    const [license, setLicense] = useState('');
+    const [remarks, setRemarks] = useState('');
 
     const createDriver = useCreateDriver();
 
@@ -33,11 +38,20 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
             await createDriver.mutateAsync({
                 full_name: name,
                 phone: phone,
+                email: email || undefined,
+                age: age ? parseInt(age) : undefined,
+                license_number: license || undefined,
+                remarks: remarks || undefined
             });
             toast.success('Driver added successfully');
             onOpenChange(false);
+            // Reset
             setName('');
             setPhone('');
+            setEmail('');
+            setAge('');
+            setLicense('');
+            setRemarks('');
         } catch (error: any) {
             toast.error('Failed to add driver: ' + error.message);
         }
@@ -45,37 +59,84 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <User className="h-5 w-5 text-primary" />
                         Add New Driver
                     </DialogTitle>
                     <DialogDescription>
-                        Create a driver profile for assignment. (They won't have login access yet).
+                        Complete profile details for the new driver.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Full Name *</Label>
+                            <Input
+                                id="name"
+                                placeholder="Ramesh Kumar"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="age">Age</Label>
+                            <Input
+                                id="age"
+                                type="number"
+                                placeholder="35"
+                                value={age}
+                                onChange={(e) => setAge(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number *</Label>
+                            <Input
+                                id="phone"
+                                placeholder="+91 98765 43210"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Login Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="driver@logestic.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
+                        <Label htmlFor="license">Driving License No. *</Label>
                         <Input
-                            id="name"
-                            placeholder="e.g. Ramesh Kumar"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            id="license"
+                            placeholder="DL-1420110012345"
+                            value={license}
+                            onChange={(e) => setLicense(e.target.value)}
                             required
                         />
                     </div>
+
                     <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
+                        <Label htmlFor="remarks">Remarks / Notes</Label>
                         <Input
-                            id="phone"
-                            placeholder="e.g. +91 98765 43210"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            required
+                            id="remarks"
+                            placeholder="Experience, shift preference, etc."
+                            value={remarks}
+                            onChange={(e) => setRemarks(e.target.value)}
                         />
                     </div>
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel

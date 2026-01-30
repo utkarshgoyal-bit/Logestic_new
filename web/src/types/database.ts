@@ -11,6 +11,11 @@ export interface Profile {
   phone: string;
   role: AppRole;
   is_active: boolean;
+  is_available: boolean;
+  age?: number;
+  license_number?: string;
+  remarks?: string;
+  email?: string;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +26,10 @@ export interface Vehicle {
   vehicle_type: string;
   capacity_kg: number;
   is_available: boolean;
+  model?: string;
+  year?: number;
+  insurance_number?: string;
+  insurance_expiry?: string;
   admin_id: string;
   created_at: string;
   updated_at: string;

@@ -33,6 +33,11 @@ export function AssignmentModal({ trip, onClose }: AssignmentModalProps) {
 
     const { data: drivers, isLoading: driversLoading } = useAvailableDrivers();
     const { data: vehicles, isLoading: vehiclesLoading } = useAvailableVehicles();
+
+    // Filter to show only available resources
+    const availableDrivers = drivers?.filter(d => d.is_available) ?? [];
+    const availableVehicles = vehicles?.filter(v => v.is_available) ?? [];
+
     const assignMutation = useAssignTrip();
 
     const handleAssign = async () => {
@@ -42,7 +47,7 @@ export function AssignmentModal({ trip, onClose }: AssignmentModalProps) {
             tripId: trip.id,
             driverId,
             vehicleId,
-            status: trip.status === 'active' ? 'active' : 'assigned'
+            status: 'assigned'
         });
 
         // Reset and close
@@ -118,7 +123,7 @@ export function AssignmentModal({ trip, onClose }: AssignmentModalProps) {
                                                     </div>
                                                 </SelectItem>
                                             ))}
-                                            {drivers?.length === 0 && (
+                                            {availableDrivers.length === 0 && (
                                                 <div className="p-2 text-sm text-muted-foreground">
                                                     No active drivers available
                                                 </div>
@@ -138,7 +143,7 @@ export function AssignmentModal({ trip, onClose }: AssignmentModalProps) {
                                             <SelectValue placeholder="Choose a vehicle..." />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {vehicles?.map((vehicle) => (
+                                            {availableVehicles.map((vehicle) => (
                                                 <SelectItem key={vehicle.id} value={vehicle.id}>
                                                     <div className="flex items-center gap-3">
                                                         <span className="font-mono">

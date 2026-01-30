@@ -17,8 +17,8 @@ interface ShipmentCardProps {
 
 const statusColors: Record<string, string> = {
     pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-    assigned: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    active: 'bg-accent/20 text-accent border-accent/30',
+    assigned: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', // Ready
+    active: 'bg-blue-500/20 text-blue-300 border-blue-500/30', // In Progress
     completed: 'bg-green-500/20 text-green-300 border-green-500/30',
     cancelled: 'bg-red-500/20 text-red-300 border-red-500/30',
 };
@@ -49,7 +49,7 @@ export function ShipmentCard({ trip }: ShipmentCardProps) {
                         Shipment
                     </CardTitle>
                     <Badge variant="outline" className={statusColors[trip.status]}>
-                        {trip.status === 'active' ? 'IN PROGRESS' : trip.status.toUpperCase()}
+                        {trip.status === 'active' ? 'IN PROGRESS' : trip.status === 'assigned' ? 'READY' : trip.status.toUpperCase()}
                     </Badge>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setChatOpen(true)}>
                         <MessageSquare className="h-4 w-4" />

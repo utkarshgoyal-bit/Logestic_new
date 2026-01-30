@@ -59,8 +59,8 @@ export function ActiveTripsList() {
                         {/* Trip Info */}
                         <div className="space-y-2 flex-1">
                             <div className="flex items-center gap-2">
-                                <Badge variant={trip.status === 'active' ? 'default' : 'secondary'} className="capitalize">
-                                    {trip.status}
+                                <Badge variant={trip.status === 'active' ? 'default' : 'secondary'} className={`capitalize ${trip.status === 'assigned' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-200' : ''}`}>
+                                    {trip.status === 'active' ? 'IN PROGRESS' : trip.status === 'assigned' ? 'READY' : trip.status}
                                 </Badge>
                                 <span className="text-sm text-muted-foreground font-mono">#{trip.id.slice(0, 8)}</span>
                                 <span className="text-sm font-medium">• {trip.client?.full_name}</span>
