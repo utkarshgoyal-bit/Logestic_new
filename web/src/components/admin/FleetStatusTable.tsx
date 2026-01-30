@@ -12,11 +12,17 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Package, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Truck, Package, Loader2, Plus, UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import { AddVehicleModal } from './AddVehicleModal';
+import { AddDriverModal } from './AddDriverModal';
 
 export function FleetStatusTable() {
     const { data: vehicles, isLoading, error } = useVehicles();
     const toggleMutation = useToggleVehicleAvailability();
+    const [showAddVehicle, setShowAddVehicle] = useState(false);
+    const [showAddDriver, setShowAddDriver] = useState(false);
 
     const handleToggle = (vehicleId: string, currentValue: boolean) => {
         toggleMutation.mutate({
@@ -60,6 +66,16 @@ export function FleetStatusTable() {
                         {availableCount}/{totalCount} Available
                     </Badge>
                 </div>
+                <div className="flex justify-end mt-2 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setShowAddDriver(true)}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add Driver
+                    </Button>
+                    <Button size="sm" onClick={() => setShowAddVehicle(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Vehicle
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto">
                 <Table>
@@ -99,8 +115,8 @@ export function FleetStatusTable() {
                                         />
                                         <span
                                             className={`text-xs font-medium w-16 ${vehicle.is_available
-                                                    ? 'text-accent'
-                                                    : 'text-muted-foreground'
+                                                ? 'text-accent'
+                                                : 'text-muted-foreground'
                                                 }`}
                                         >
                                             {vehicle.is_available ? 'Available' : 'In Use'}
@@ -118,6 +134,8 @@ export function FleetStatusTable() {
                     </div>
                 )}
             </CardContent>
+            <AddVehicleModal open={showAddVehicle} onOpenChange={setShowAddVehicle} />
+            <AddDriverModal open={showAddDriver} onOpenChange={setShowAddDriver} />
         </Card>
     );
 }

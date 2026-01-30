@@ -49,7 +49,7 @@ export function useActiveTrips() {
           driver:profiles!trips_driver_id_fkey (
              id, full_name, phone
           ),
-          vehicle:vehicles (
+          vehicle:vehicles!trips_vehicle_id_fkey (
              id, registration_number, vehicle_type
           )
         `)
@@ -111,17 +111,19 @@ export function useAssignTrip() {
             tripId,
             driverId,
             vehicleId,
+            status
         }: {
             tripId: string;
             driverId: string;
             vehicleId: string;
+            status?: 'assigned' | 'active';
         }) => {
             const { error } = await supabase
                 .from('trips')
                 .update({
                     driver_id: driverId,
                     vehicle_id: vehicleId,
-                    status: 'assigned',
+                    status: status || 'assigned',
                 })
                 .eq('id', tripId);
 
@@ -143,12 +145,14 @@ export function useUpdateTrip() {
 
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Trip> }) => {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('trips')
                 .update(updates)
-                .eq('id', id);
+                .eq('id', id)
+                .select();
 
             if (error) throw error;
+            if (!data || data.length === 0) throw new Error("Update failed: Trip not found or permission denied (RLS).");
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: TRIPS_KEY });

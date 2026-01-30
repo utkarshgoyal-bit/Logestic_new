@@ -49,7 +49,7 @@ export function ShipmentCard({ trip }: ShipmentCardProps) {
                         Shipment
                     </CardTitle>
                     <Badge variant="outline" className={statusColors[trip.status]}>
-                        {trip.status.toUpperCase()}
+                        {trip.status === 'active' ? 'IN PROGRESS' : trip.status.toUpperCase()}
                     </Badge>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setChatOpen(true)}>
                         <MessageSquare className="h-4 w-4" />

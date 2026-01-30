@@ -9,6 +9,7 @@ import { MapPin, ArrowRight, Loader2, IndianRupee, MessageSquare, Pencil, Truck,
 import type { Trip, Profile, Vehicle } from '@/types/database';
 import { EditTripModal } from './EditTripModal';
 import { PaymentModal } from './PaymentModal';
+import { AssignmentModal } from './AssignmentModal';
 import { ChatInterface } from '@/components/shared/ChatInterface';
 
 export function ActiveTripsList() {
@@ -17,6 +18,7 @@ export function ActiveTripsList() {
     // Action states
     const [editingTrip, setEditingTrip] = useState<(Trip & { client?: Profile }) | null>(null);
     const [paymentTrip, setPaymentTrip] = useState<(Trip & { client?: Profile }) | null>(null);
+    const [assigningTrip, setAssigningTrip] = useState<(Trip & { client?: Profile }) | null>(null);
     const [chattingTrip, setChattingTrip] = useState<(Trip & { client?: Profile }) | null>(null);
 
     if (isLoading) {
@@ -84,18 +86,37 @@ export function ActiveTripsList() {
                                         {trip.driver.full_name}
                                     </div>
                                 )}
-                                <div className="flex items-center gap-1">
-                                    <IndianRupee className="h-3 w-3" />
-                                    {trip.billed_amount?.toLocaleString() || 0}
-                                    {trip.billed_amount > trip.amount_received && (
-                                        <span className="text-destructive ml-1">(Due: {trip.billed_amount - trip.amount_received})</span>
-                                    )}
+                            </div>
+
+                            {/* Financial Summary */}
+                            <div className="flex gap-4 mt-2 text-xs border-t pt-2 w-fit">
+                                <div>
+                                    <span className="text-muted-foreground mr-1">Invoice:</span>
+                                    <span className="font-medium">₹{trip.billed_amount?.toLocaleString() || 0}</span>
                                 </div>
+                                <div className={trip.amount_received > 0 ? "text-green-600" : "text-muted-foreground"}>
+                                    <span className="mr-1">Paid:</span>
+                                    <span className="font-medium">₹{trip.amount_received?.toLocaleString() || 0}</span>
+                                </div>
+                                {(trip.billed_amount - trip.amount_received) > 0 && (
+                                    <div className="text-destructive">
+                                        <span className="mr-1">Due:</span>
+                                        <span className="font-bold">₹{(trip.billed_amount - trip.amount_received).toLocaleString()}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Actions */}
                         <div className="flex items-center gap-1 self-end md:self-center">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAssigningTrip(trip)}
+                                title="Assign Driver/Vehicle"
+                            >
+                                <Truck className="h-4 w-4" />
+                            </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -129,6 +150,7 @@ export function ActiveTripsList() {
             {/* Reuse existing modals */}
             <EditTripModal trip={editingTrip} onClose={() => setEditingTrip(null)} />
             <PaymentModal trip={paymentTrip} onClose={() => setPaymentTrip(null)} />
+            <AssignmentModal trip={assigningTrip} onClose={() => setAssigningTrip(null)} />
             <ChatInterface trip={chattingTrip} open={!!chattingTrip} onClose={() => setChattingTrip(null)} />
         </Card>
     );

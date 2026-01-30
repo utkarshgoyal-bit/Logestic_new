@@ -42,6 +42,7 @@ export function AssignmentModal({ trip, onClose }: AssignmentModalProps) {
             tripId: trip.id,
             driverId,
             vehicleId,
+            status: trip.status === 'active' ? 'active' : 'assigned'
         });
 
         // Reset and close

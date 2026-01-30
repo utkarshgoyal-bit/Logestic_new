@@ -76,3 +76,72 @@ export function useToggleVehicleAvailability() {
         },
     });
 }
+// Create a new vehicle
+export function useCreateVehicle() {
+    const supabase = createClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (newVehicle: {
+            registration_number: string;
+            vehicle_type: string;
+            capacity_kg: number;
+        }) => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const { data, error } = await supabase
+                .from('vehicles')
+                .insert({
+                    ...newVehicle,
+                    is_available: true,
+                    admin_id: user.id
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: VEHICLES_KEY });
+        },
+    });
+}
+
+// Create a new driver (Profile)
+export function useCreateDriver() {
+    const supabase = createClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (newDriver: {
+            full_name: string;
+            phone: string;
+        }) => {
+            const { error: authError } = await supabase.auth.getUser();
+            if (authError) throw new Error('Not authenticated');
+
+            // Generate a random UUID for the driver profile
+            const { data, error } = await supabase
+                .from('profiles')
+                .insert({
+                    id: crypto.randomUUID(),
+                    full_name: newDriver.full_name,
+                    phone: newDriver.phone,
+                    role: 'driver',
+                    is_active: true
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            // Invalidate drivers query (if it exists, e.g. in trips or a dedicated drivers list)
+            // Also invalidate vehicles just in case there's a relation, though mostly separate.
+            queryClient.invalidateQueries({ queryKey: ['drivers'] });
+        },
+    });
+}
