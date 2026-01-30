@@ -53,3 +53,33 @@ export function useClientTripMilestones(tripId: string | undefined) {
         enabled: !!tripId,
     });
 }
+
+// Create a new trip request
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+export function useCreateTrip() {
+    const supabase = createClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (newTrip: {
+            client_id: string;
+            pickup_location: string;
+            drop_location: string;
+            billed_amount: number;
+            status: 'pending';
+        }) => {
+            const { data, error } = await supabase
+                .from('trips')
+                .insert(newTrip)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: CLIENT_TRIPS_KEY });
+        },
+    });
+}

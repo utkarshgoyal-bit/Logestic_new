@@ -3,11 +3,24 @@
 import { useClientTrips } from '@/lib/queries/clientTrips';
 import { useRealtimeTrips } from '@/lib/queries/realtime';
 import { ShipmentCard } from '@/components/client/ShipmentCard';
+import { RequestTripForm } from '@/components/client/RequestTripForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Package, Loader2, MapPin, TrendingUp } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { useEffect, useState } from 'react';
 
 export default function ClientDashboard() {
     const { data: trips, isLoading, error } = useClientTrips();
+    const [userId, setUserId] = useState<string>('');
+
+    useEffect(() => {
+        const getUser = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setUserId(user.id);
+        };
+        getUser();
+    }, []);
 
     // Enable real-time trip updates
     useRealtimeTrips();
@@ -54,6 +67,7 @@ export default function ClientDashboard() {
                         <span className="text-xs font-medium text-accent">{activeTrips.length} Active</span>
                     </div>
                 )}
+                {userId && <RequestTripForm clientId={userId} />}
             </header>
 
             {/* Quick Stats */}
@@ -82,56 +96,64 @@ export default function ClientDashboard() {
             </div>
 
             {/* Active Shipments */}
-            {activeTrips.length > 0 && (
-                <section>
-                    <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-accent" />
-                        Active Shipments
-                    </h2>
-                    <div className="space-y-3">
-                        {activeTrips.map((trip) => (
-                            <ShipmentCard key={trip.id} trip={trip} />
-                        ))}
-                    </div>
-                </section>
-            )}
+            {
+                activeTrips.length > 0 && (
+                    <section>
+                        <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-accent" />
+                            Active Shipments
+                        </h2>
+                        <div className="space-y-3">
+                            {activeTrips.map((trip) => (
+                                <ShipmentCard key={trip.id} trip={trip} />
+                            ))}
+                        </div>
+                    </section>
+                )
+            }
 
             {/* Pending Shipments */}
-            {pendingTrips.length > 0 && (
-                <section>
-                    <h2 className="text-sm font-semibold mb-3 text-yellow-400">Awaiting Assignment</h2>
-                    <div className="space-y-3">
-                        {pendingTrips.map((trip) => (
-                            <ShipmentCard key={trip.id} trip={trip} />
-                        ))}
-                    </div>
-                </section>
-            )}
+            {
+                pendingTrips.length > 0 && (
+                    <section>
+                        <h2 className="text-sm font-semibold mb-3 text-yellow-400">Awaiting Assignment</h2>
+                        <div className="space-y-3">
+                            {pendingTrips.map((trip) => (
+                                <ShipmentCard key={trip.id} trip={trip} />
+                            ))}
+                        </div>
+                    </section>
+                )
+            }
 
             {/* Completed Shipments */}
-            {completedTrips.length > 0 && (
-                <section>
-                    <h2 className="text-sm font-semibold mb-3 text-muted-foreground">History</h2>
-                    <div className="space-y-3">
-                        {completedTrips.map((trip) => (
-                            <ShipmentCard key={trip.id} trip={trip} />
-                        ))}
-                    </div>
-                </section>
-            )}
+            {
+                completedTrips.length > 0 && (
+                    <section>
+                        <h2 className="text-sm font-semibold mb-3 text-muted-foreground">History</h2>
+                        <div className="space-y-3">
+                            {completedTrips.map((trip) => (
+                                <ShipmentCard key={trip.id} trip={trip} />
+                            ))}
+                        </div>
+                    </section>
+                )
+            }
 
             {/* Empty State */}
-            {!trips?.length && (
-                <Card className="max-w-sm mx-auto">
-                    <CardContent className="text-center py-12">
-                        <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                        <h2 className="text-xl font-bold mb-2">No Shipments Yet</h2>
-                        <p className="text-muted-foreground text-sm">
-                            Your shipment requests will appear here.
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
-        </main>
+            {
+                !trips?.length && (
+                    <Card className="max-w-sm mx-auto">
+                        <CardContent className="text-center py-12">
+                            <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                            <h2 className="text-xl font-bold mb-2">No Shipments Yet</h2>
+                            <p className="text-muted-foreground text-sm">
+                                Your shipment requests will appear here.
+                            </p>
+                        </CardContent>
+                    </Card>
+                )
+            }
+        </main >
     );
 }
