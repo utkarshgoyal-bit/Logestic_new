@@ -1,40 +1,51 @@
-import Link from "next/link";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { Truck, ShieldCheck, User } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-50">
-      <div className="max-w-4xl w-full text-center space-y-8">
-        <header className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
-            Lean Logistics Management
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            A unified tripartite system for Admins, Clients, and Drivers.
-          </p>
-        </header>
+    <div className="flex min-h-screen w-full bg-zinc-950 text-zinc-50">
+      {/* Left Panel: Branding */}
+      <div className="hidden lg:flex w-1/2 flex-col justify-center p-12 bg-zinc-900 border-r border-zinc-800">
+        <div className="max-w-md mx-auto space-y-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-blue-600/20 rounded-xl border border-blue-500/30">
+                <Truck className="w-8 h-8 text-blue-500" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">Lean Logistics</h1>
+            </div>
+            <h2 className="text-4xl font-bold tracking-tighter">
+              Unified Management System
+            </h2>
+            <p className="text-zinc-400 text-lg leading-relaxed">
+              A complete tripartite solution connecting Admins, Clients, and Drivers in real-time.
+              Optimize your fleet, track shipments, and manage operations seamlessly.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Admin Portal Link */}
-          <Link href="/admin" className="group p-8 border border-zinc-800 rounded-2xl bg-zinc-900/50 hover:bg-zinc-900 hover:border-blue-500 transition-all">
-            <ShieldCheck className="w-12 h-12 mx-auto mb-4 text-blue-500" />
-            <h2 className="text-xl font-semibold mb-2">Admin Portal</h2>
-            <p className="text-sm text-zinc-500">Manage fleet, assign drivers, and audit financial data.</p>
-          </Link>
+          <div className="grid grid-cols-2 gap-4 pt-8">
+            <div className="p-4 rounded-lg bg-zinc-950/50 border border-zinc-800">
+              <ShieldCheck className="w-6 h-6 text-indigo-400 mb-2" />
+              <div className="font-semibold">Secure Admin</div>
+              <div className="text-xs text-zinc-500">Full fleet control</div>
+            </div>
+            <div className="p-4 rounded-lg bg-zinc-950/50 border border-zinc-800">
+              <User className="w-6 h-6 text-emerald-400 mb-2" />
+              <div className="font-semibold">Client Portal</div>
+              <div className="text-xs text-zinc-500">Real-time tracking</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          {/* Client Portal Link */}
-          <Link href="/client" className="group p-8 border border-zinc-800 rounded-2xl bg-zinc-900/50 hover:bg-zinc-900 hover:border-accent transition-all">
-            <User className="w-12 h-12 mx-auto mb-4 text-accent" />
-            <h2 className="text-xl font-semibold mb-2">Client Portal</h2>
-            <p className="text-sm text-zinc-500">Request truck availability and monitor shipment milestones.</p>
-          </Link>
-
-          {/* Driver Portal Link */}
-          <Link href="/driver" className="group p-8 border border-zinc-800 rounded-2xl bg-zinc-900/50 hover:bg-zinc-900 hover:border-green-500 transition-all">
-            <Truck className="w-12 h-12 mx-auto mb-4 text-green-500" />
-            <h2 className="text-xl font-semibold mb-2">Driver Portal</h2>
-            <p className="text-sm text-zinc-500">Log manual milestones, fuel stops, and toll expenses.</p>
-          </Link>
+      {/* Right Panel: Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md space-y-6">
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-2xl font-bold">Lean Logistics</h1>
+            <p className="text-sm text-zinc-400">Sign in to continue</p>
+          </div>
+          <LoginForm />
         </div>
       </div>
     </div>

@@ -7,14 +7,19 @@ import type { Trip, Profile, Vehicle, Milestone } from '@/types/database';
 const CLIENT_TRIPS_KEY = ['client', 'trips'];
 
 // Fetch all trips for the current client
-export function useClientTrips() {
+export function useClientTrips(userId?: string) {
     const supabase = createClient();
 
     return useQuery({
-        queryKey: CLIENT_TRIPS_KEY,
+        queryKey: [...CLIENT_TRIPS_KEY, userId],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+            let currentUserId = userId;
+
+            if (!currentUserId) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('Not authenticated');
+                currentUserId = user.id;
+            }
 
             const { data, error } = await supabase
                 .from('trips')
@@ -23,12 +28,13 @@ export function useClientTrips() {
                     driver:profiles!trips_driver_id_fkey (id, full_name, phone),
                     vehicle:vehicles!trips_vehicle_id_fkey (id, registration_number, vehicle_type)
                 `)
-                .eq('client_id', user.id)
+                .eq('client_id', currentUserId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
             return data as (Trip & { driver: Profile | null; vehicle: Vehicle | null })[];
         },
+        enabled: userId !== undefined || true, // Always enabled, will fetch user if needed
     });
 }
 

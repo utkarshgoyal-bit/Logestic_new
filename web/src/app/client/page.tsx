@@ -4,28 +4,94 @@ import { useClientTrips } from '@/lib/queries/clientTrips';
 import { useRealtimeTrips } from '@/lib/queries/realtime';
 import { ShipmentCard } from '@/components/client/ShipmentCard';
 import { RequestTripForm } from '@/components/client/RequestTripForm';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Package, Loader2, MapPin, TrendingUp } from 'lucide-react';
+import { Package, Loader2, MapPin, TrendingUp, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function ClientDashboard() {
-    const { data: trips, isLoading, error } = useClientTrips();
     const [userId, setUserId] = useState<string>('');
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [authLoading, setAuthLoading] = useState(true);
+    const { data: trips, isLoading: tripsLoading, error } = useClientTrips(userId);
+    const router = useRouter();
 
     useEffect(() => {
-        const getUser = async () => {
+        const checkAuth = async () => {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) setUserId(user.id);
+
+            if (!user) {
+                router.push('/?error=Please+login');
+                return;
+            }
+
+            // Verify role
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.role !== 'client') {
+                // Do not redirect, let the UI handle the access denied state
+                setIsAuthorized(false);
+                setAuthLoading(false);
+                return;
+            }
+
+            setUserId(user.id);
+            setIsAuthorized(true);
+            setAuthLoading(false);
         };
-        getUser();
-    }, []);
+        checkAuth();
+    }, [router]);
+
+    const handleLogout = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push('/');
+        toast.success('Logged out successfully');
+    };
 
     // Enable real-time trip updates
     useRealtimeTrips();
 
-    if (isLoading) {
+    if (authLoading) {
+        return (
+            <main className="min-h-screen flex items-center justify-center p-4 bg-background">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            </main>
+        );
+    }
+
+    if (!isAuthorized) {
+        return (
+            <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+                <Card className="max-w-md w-full border-destructive/50 bg-destructive/10">
+                    <CardContent className="flex flex-col items-center text-center p-6 space-y-4">
+                        <div className="p-3 bg-destructive/20 rounded-full">
+                            <LogOut className="h-8 w-8 text-destructive" />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-bold text-destructive">Access Denied</h2>
+                            <p className="text-sm text-muted-foreground">
+                                This portal is restricted to Client accounts only.
+                            </p>
+                        </div>
+                        <Button variant="outline" onClick={handleLogout} className="w-full">
+                            Sign Out
+                        </Button>
+                    </CardContent>
+                </Card>
+            </main>
+        );
+    }
+
+    if (tripsLoading) {
         return (
             <main className="min-h-screen flex items-center justify-center p-4 dark bg-background">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -68,6 +134,10 @@ export default function ClientDashboard() {
                     </div>
                 )}
                 {userId && <RequestTripForm clientId={userId} />}
+
+                <Button variant="ghost" size="icon" onClick={handleLogout} title="Sign Out">
+                    <LogOut className="h-5 w-5 text-muted-foreground hover:text-destructive transition-colors" />
+                </Button>
             </header>
 
             {/* Quick Stats */}
@@ -143,13 +213,22 @@ export default function ClientDashboard() {
             {/* Empty State */}
             {
                 !trips?.length && (
-                    <Card className="max-w-sm mx-auto">
-                        <CardContent className="text-center py-12">
-                            <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                            <h2 className="text-xl font-bold mb-2">No Shipments Yet</h2>
-                            <p className="text-muted-foreground text-sm">
-                                Your shipment requests will appear here.
-                            </p>
+                    <Card className="max-w-md mx-auto mt-12 bg-secondary/20 border-dashed">
+                        <CardContent className="text-center py-12 space-y-4">
+                            <div className="bg-background rounded-full p-4 w-fit mx-auto shadow-sm">
+                                <Package className="h-10 w-10 text-muted-foreground/50" />
+                            </div>
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-bold">No Shipments Found</h2>
+                                <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                                    You haven't created any shipment requests yet. Start by creating a new one.
+                                </p>
+                            </div>
+                            {userId && (
+                                <div className="pt-2">
+                                    <RequestTripForm clientId={userId} />
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )
