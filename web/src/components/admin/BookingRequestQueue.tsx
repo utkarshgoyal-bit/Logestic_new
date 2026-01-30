@@ -9,6 +9,7 @@ import { ClipboardList, MapPin, ArrowRight, Loader2, IndianRupee } from 'lucide-
 import type { Trip, Profile } from '@/types/database';
 import { AssignmentModal } from './AssignmentModal';
 import { EditTripModal } from './EditTripModal';
+import { PaymentModal } from './PaymentModal';
 import { ChatInterface } from '@/components/shared/ChatInterface';
 import { useDeleteTrip } from '@/lib/queries/trips';
 // Dropdown imports removed to use inline buttons due to missing component
@@ -23,6 +24,7 @@ export function BookingRequestQueue() {
     // State for different actions
     const [selectedTrip, setSelectedTrip] = useState<(Trip & { client: Profile }) | null>(null); // For Assignment
     const [editingTrip, setEditingTrip] = useState<(Trip & { client: Profile }) | null>(null);
+    const [paymentTrip, setPaymentTrip] = useState<(Trip & { client: Profile }) | null>(null);
     const [chattingTrip, setChattingTrip] = useState<(Trip & { client: Profile }) | null>(null);
 
     const handleDelete = async (id: string) => {
@@ -96,6 +98,14 @@ export function BookingRequestQueue() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
+                                        onClick={() => setPaymentTrip(trip)}
+                                        title="Manage Payments"
+                                    >
+                                        <IndianRupee className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() => setChattingTrip(trip)}
                                         title="Chat with Client"
                                     >
@@ -148,6 +158,10 @@ export function BookingRequestQueue() {
             <EditTripModal
                 trip={editingTrip}
                 onClose={() => setEditingTrip(null)}
+            />
+            <PaymentModal
+                trip={paymentTrip}
+                onClose={() => setPaymentTrip(null)}
             />
             <ChatInterface
                 trip={chattingTrip}

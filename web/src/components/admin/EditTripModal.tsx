@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 // import { Textarea } from '@/components/ui/textarea'; // Component missing, using native textarea
 import { useUpdateTrip } from '@/lib/queries/trips';
 import type { Trip, Profile } from '@/types/database';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EditTripModalProps {
@@ -17,15 +17,15 @@ interface EditTripModalProps {
 }
 
 export function EditTripModal({ trip, onClose }: EditTripModalProps) {
-    const [amount, setAmount] = useState<string>('');
-    const [received, setReceived] = useState<string>('');
+    const [pickup, setPickup] = useState<string>('');
+    const [drop, setDrop] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const updateTrip = useUpdateTrip();
 
     useEffect(() => {
         if (trip) {
-            setAmount(trip.billed_amount?.toString() || '0');
-            setReceived(trip.amount_received?.toString() || '0');
+            setPickup(trip.pickup_location || '');
+            setDrop(trip.drop_location || '');
             setNotes(trip.notes || '');
         }
     }, [trip]);
@@ -37,8 +37,8 @@ export function EditTripModal({ trip, onClose }: EditTripModalProps) {
             await updateTrip.mutateAsync({
                 id: trip.id,
                 updates: {
-                    billed_amount: Number(amount),
-                    amount_received: Number(received),
+                    pickup_location: pickup,
+                    drop_location: drop,
                     notes: notes
                 }
             });
@@ -49,44 +49,41 @@ export function EditTripModal({ trip, onClose }: EditTripModalProps) {
         }
     };
 
-    const remaining = Math.max(0, Number(amount) - Number(received));
-
     return (
         <Dialog open={!!trip} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>Edit Request Details</DialogTitle>
+                    <DialogTitle>Edit Trip Details</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="amount">Invoice Amount (₹)</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="pickup">Pickup Location</Label>
+                        <div className="relative">
+                            <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                id="amount"
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="received">Received Amount (₹)</Label>
-                            <Input
-                                id="received"
-                                type="number"
-                                value={received}
-                                onChange={(e) => setReceived(e.target.value)}
-                                placeholder="0"
+                                id="pickup"
+                                value={pickup}
+                                onChange={(e) => setPickup(e.target.value)}
+                                className="pl-9"
+                                placeholder="Enter pickup address"
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-md border border-secondary">
-                        <span className="text-sm font-medium">Remaining Balance:</span>
-                        <span className={`font-bold ${remaining > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                            ₹{remaining.toLocaleString()}
-                        </span>
+                    <div className="space-y-2">
+                        <Label htmlFor="drop">Drop Location</Label>
+                        <div className="relative">
+                            <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="drop"
+                                value={drop}
+                                onChange={(e) => setDrop(e.target.value)}
+                                className="pl-9"
+                                placeholder="Enter drop address"
+                            />
+                        </div>
                     </div>
+
                     <div className="space-y-2">
                         <Label htmlFor="notes">Notes / Vehicle Details</Label>
                         <textarea

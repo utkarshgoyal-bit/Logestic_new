@@ -32,6 +32,36 @@ export function usePendingTrips() {
     });
 }
 
+// Fetch active/assigned trips
+export function useActiveTrips() {
+    const supabase = createClient();
+
+    return useQuery({
+        queryKey: ['trips', 'active'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('trips')
+                .select(`
+          *,
+          client:profiles!trips_client_id_fkey (
+            id, full_name, phone
+          ),
+          driver:profiles!trips_driver_id_fkey (
+             id, full_name, phone
+          ),
+          vehicle:vehicles (
+             id, registration_number, vehicle_type
+          )
+        `)
+                .in('status', ['assigned', 'active'])
+                .order('updated_at', { ascending: false });
+
+            if (error) throw error;
+            return data as (Trip & { client: Profile; driver: Profile; vehicle: Vehicle })[];
+        },
+    });
+}
+
 // Fetch available drivers
 export function useAvailableDrivers() {
     const supabase = createClient();

@@ -2,8 +2,10 @@
 
 import { FleetStatusTable } from '@/components/admin/FleetStatusTable';
 import { BookingRequestQueue } from '@/components/admin/BookingRequestQueue';
-import { Gauge, TrendingUp, Truck, ClipboardCheck } from 'lucide-react';
+import { ActiveTripsList } from '@/components/admin/ActiveTripsList';
+import { Gauge, TrendingUp, Truck, ClipboardCheck, Activity } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRealtimeTrips, useRealtimeVehicles } from '@/lib/queries/realtime';
 
 // Quick stats card component
@@ -103,9 +105,31 @@ export default function AdminDashboard() {
 
             {/* Split Pane Dashboard */}
             <div className="grid grid-cols-12 gap-6 h-[calc(100vh-280px)]">
-                {/* Left: Fleet Status (8 columns) */}
-                <section className="col-span-12 lg:col-span-8 overflow-hidden">
-                    <FleetStatusTable />
+                {/* Left: Main Content (8 columns) */}
+                <section className="col-span-12 lg:col-span-8 overflow-hidden flex flex-col">
+                    <Tabs defaultValue="fleet" className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <TabsList>
+                                <TabsTrigger value="fleet" className="flex items-center gap-2">
+                                    <Truck className="h-4 w-4" />
+                                    Fleet Status
+                                </TabsTrigger>
+                                <TabsTrigger value="active" className="flex items-center gap-2">
+                                    <Activity className="h-4 w-4" />
+                                    Active Shipments
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+
+                        <div className="flex-1 overflow-auto pr-2">
+                            <TabsContent value="fleet" className="mt-0 h-full">
+                                <FleetStatusTable />
+                            </TabsContent>
+                            <TabsContent value="active" className="mt-0 h-full">
+                                <ActiveTripsList />
+                            </TabsContent>
+                        </div>
+                    </Tabs>
                 </section>
 
                 {/* Right: Booking Queue (4 columns) */}
