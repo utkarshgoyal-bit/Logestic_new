@@ -105,3 +105,43 @@ export function useAssignTrip() {
         },
     });
 }
+
+// Update trip details (e.g. amount, notes)
+export function useUpdateTrip() {
+    const supabase = createClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, updates }: { id: string; updates: Partial<Trip> }) => {
+            const { error } = await supabase
+                .from('trips')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: TRIPS_KEY });
+        },
+    });
+}
+
+// Delete a trip request
+export function useDeleteTrip() {
+    const supabase = createClient();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase
+                .from('trips')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: TRIPS_KEY });
+        },
+    });
+}

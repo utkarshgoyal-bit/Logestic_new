@@ -6,6 +6,10 @@ import { MapPin, ArrowRight, Truck, User, Clock, Package, Coffee, Fuel, Receipt,
 import { useClientTripMilestones } from '@/lib/queries/clientTrips';
 import { useRealtimeMilestones } from '@/lib/queries/realtime';
 import type { Trip, Profile, Vehicle, Milestone, MilestoneType } from '@/types/database';
+import { useState } from 'react';
+import { ChatInterface } from '@/components/shared/ChatInterface';
+import { Button } from '@/components/ui/button';
+import { MessageSquare } from 'lucide-react';
 
 interface ShipmentCardProps {
     trip: Trip & { driver: Profile | null; vehicle: Vehicle | null };
@@ -29,6 +33,7 @@ const milestoneIcons: Record<MilestoneType, React.ElementType> = {
 
 export function ShipmentCard({ trip }: ShipmentCardProps) {
     const { data: milestones = [] } = useClientTripMilestones(trip.id);
+    const [chatOpen, setChatOpen] = useState(false);
 
     // Subscribe to real-time milestone updates
     useRealtimeMilestones(trip.id);
@@ -46,6 +51,10 @@ export function ShipmentCard({ trip }: ShipmentCardProps) {
                     <Badge variant="outline" className={statusColors[trip.status]}>
                         {trip.status.toUpperCase()}
                     </Badge>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setChatOpen(true)}>
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="sr-only">Chat</span>
+                    </Button>
                 </div>
             </CardHeader>
 
@@ -113,6 +122,12 @@ export function ShipmentCard({ trip }: ShipmentCardProps) {
                     </div>
                 )}
             </CardContent>
+
+            <ChatInterface
+                trip={trip}
+                open={chatOpen}
+                onClose={() => setChatOpen(false)}
+            />
         </Card>
     );
 }

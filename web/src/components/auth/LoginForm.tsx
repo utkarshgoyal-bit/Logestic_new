@@ -63,20 +63,31 @@ export function LoginForm() {
     };
 
     const signInAsTestClient = async () => {
-        setEmail('client@example.com');
-        setPassword('client123'); // Assuming this is the test account password
-        // We set state but also trigger login immediately for better UX
+        await performTestLogin('client@example.com', 'client123');
+    };
+
+    const signInAsTestAdmin = async () => {
+        await performTestLogin('admin@example.com', 'password123');
+    };
+
+    const signInAsTestDriver = async () => {
+        await performTestLogin('driver@example.com', 'password123');
+    };
+
+    const performTestLogin = async (e: string, p: string) => {
+        setEmail(e);
+        setPassword(p);
         setLoading(true);
         const { data, error } = await supabase.auth.signInWithPassword({
-            email: 'client@example.com',
-            password: 'client123',
+            email: e,
+            password: p,
         });
 
         if (error) {
             toast.error('Test login failed: ' + error.message);
             setLoading(false);
         } else if (data.user) {
-            toast.success('Signed in as Test Client');
+            toast.success('Signed in successfully');
             await handleRedirect(data.user.id);
         }
     };
@@ -130,14 +141,32 @@ export function LoginForm() {
                     </div>
                 </div>
 
-                <Button
-                    variant="outline"
-                    className="w-full border-dashed border-accent/50 hover:border-accent hover:bg-accent/10"
-                    onClick={signInAsTestClient}
-                    disabled={loading}
-                >
-                    Sign in as Test Client
-                </Button>
+                <div className="grid grid-cols-3 gap-2">
+                    <Button
+                        variant="outline"
+                        className="w-full text-xs h-9 border-dashed border-accent/50 hover:bg-accent/10"
+                        onClick={signInAsTestClient}
+                        disabled={loading}
+                    >
+                        Test Client
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="w-full text-xs h-9 border-dashed border-blue-500/50 hover:bg-blue-500/10"
+                        onClick={signInAsTestAdmin}
+                        disabled={loading}
+                    >
+                        Test Admin
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="w-full text-xs h-9 border-dashed border-green-500/50 hover:bg-green-500/10"
+                        onClick={signInAsTestDriver}
+                        disabled={loading}
+                    >
+                        Test Driver
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     );

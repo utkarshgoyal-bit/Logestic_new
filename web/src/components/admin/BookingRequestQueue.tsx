@@ -8,10 +8,32 @@ import { Badge } from '@/components/ui/badge';
 import { ClipboardList, MapPin, ArrowRight, Loader2, IndianRupee } from 'lucide-react';
 import type { Trip, Profile } from '@/types/database';
 import { AssignmentModal } from './AssignmentModal';
+import { EditTripModal } from './EditTripModal';
+import { ChatInterface } from '@/components/shared/ChatInterface';
+import { useDeleteTrip } from '@/lib/queries/trips';
+// Dropdown imports removed to use inline buttons due to missing component
+
+import { MoreVertical, Pencil, MessageSquare, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function BookingRequestQueue() {
     const { data: trips, isLoading, error } = usePendingTrips();
-    const [selectedTrip, setSelectedTrip] = useState<(Trip & { client: Profile }) | null>(null);
+    const deleteTrip = useDeleteTrip();
+
+    // State for different actions
+    const [selectedTrip, setSelectedTrip] = useState<(Trip & { client: Profile }) | null>(null); // For Assignment
+    const [editingTrip, setEditingTrip] = useState<(Trip & { client: Profile }) | null>(null);
+    const [chattingTrip, setChattingTrip] = useState<(Trip & { client: Profile }) | null>(null);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this booking request?")) return;
+        try {
+            await deleteTrip.mutateAsync(id);
+            toast.success("Booking request deleted");
+        } catch (error) {
+            toast.error("Failed to delete request");
+        }
+    };
 
     if (isLoading) {
         return (
@@ -62,10 +84,37 @@ export function BookingRequestQueue() {
                                     <IndianRupee className="h-3 w-3 mr-1" />
                                     {trip.billed_amount.toLocaleString()}
                                 </Badge>
+                                <div className="flex justify-end gap-1 mt-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setEditingTrip(trip)}
+                                        title="Edit Details"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setChattingTrip(trip)}
+                                        title="Chat with Client"
+                                    >
+                                        <MessageSquare className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => handleDelete(trip.id)}
+                                        title="Delete Request"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
 
                             {/* Route */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                            < div className="flex items-center gap-2 text-sm text-muted-foreground mb-3" >
                                 <MapPin className="h-4 w-4 text-accent shrink-0" />
                                 <span className="truncate">{trip.pickup_location || 'TBD'}</span>
                                 <ArrowRight className="h-4 w-4 shrink-0" />
@@ -89,12 +138,21 @@ export function BookingRequestQueue() {
                             No pending requests
                         </div>
                     )}
-                </CardContent>
-            </Card>
+                </CardContent >
+            </Card >
 
             <AssignmentModal
                 trip={selectedTrip}
                 onClose={() => setSelectedTrip(null)}
+            />
+            <EditTripModal
+                trip={editingTrip}
+                onClose={() => setEditingTrip(null)}
+            />
+            <ChatInterface
+                trip={chattingTrip}
+                open={!!chattingTrip}
+                onClose={() => setChattingTrip(null)}
             />
         </>
     );

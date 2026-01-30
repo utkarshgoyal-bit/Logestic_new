@@ -69,15 +69,27 @@ export function useCreateTrip() {
 
     return useMutation({
         mutationFn: async (newTrip: {
-            client_id: string;
+            // client_id removed, we will fetch it securely
             pickup_location: string;
             drop_location: string;
-            billed_amount: number;
+            billed_amount?: number;
             status: 'pending';
+            notes?: string;
         }) => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('User not authenticated');
+
+            const tripPayload = {
+                ...newTrip,
+                client_id: user.id,
+                billed_amount: newTrip.billed_amount ?? 0
+            };
+
+            console.log('Creating trip with payload:', tripPayload);
+
             const { data, error } = await supabase
                 .from('trips')
-                .insert(newTrip)
+                .insert(tripPayload)
                 .select()
                 .single();
 
