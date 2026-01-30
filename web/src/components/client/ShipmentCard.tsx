@@ -115,12 +115,25 @@ export function ShipmentCard({ trip }: ShipmentCardProps) {
                     </div>
                 )}
 
-                {/* Billed Amount */}
-                {trip.billed_amount > 0 && (
-                    <div className="text-right">
-                        <span className="text-lg font-bold text-primary">₹{trip.billed_amount.toLocaleString()}</span>
+                {/* Financials */}
+                <div className="border-t border-border/50 pt-3 flex flex-col gap-1 items-end">
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">Invoice:</span>
+                        <span className="font-semibold">₹{trip.billed_amount.toLocaleString()}</span>
                     </div>
-                )}
+                    {trip.amount_received > 0 && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">Paid:</span>
+                            <span className="text-green-600 font-medium">₹{trip.amount_received.toLocaleString()}</span>
+                        </div>
+                    )}
+                    {(trip.billed_amount - trip.amount_received) > 0 && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">Due:</span>
+                            <span className="text-destructive font-bold">₹{(trip.billed_amount - trip.amount_received).toLocaleString()}</span>
+                        </div>
+                    )}
+                </div>
             </CardContent>
 
             <ChatInterface
