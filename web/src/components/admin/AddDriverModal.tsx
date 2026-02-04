@@ -2,7 +2,9 @@
 // Force HMR update
 
 import { useState } from 'react';
-import { useCreateDriver } from '@/lib/queries/vehicles';
+import { createDriverAction } from '@/actions/driver';
+import { useQueryClient } from '@tanstack/react-query';
+// import { useCreateDriver } from '@/lib/queries/vehicles'; // Not used anymore
 import {
     Dialog,
     DialogContent,
@@ -29,13 +31,21 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
     const [age, setAge] = useState('');
     const [license, setLicense] = useState('');
     const [remarks, setRemarks] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const queryClient = useQueryClient();
 
-    const createDriver = useCreateDriver();
+    // We import the server action dynamically or at the top. 
+    // Since it's 'use server', detailed imports work.
+    // Ideally import { createDriverAction } from '@/actions/driver'; at top
+    // I will add the import in a subsequent edit or assume I can rewrite the whole file, 
+    // but the tool is replace_file_content with chunks.
+    // I'll add the import in a separate chunk.
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            await createDriver.mutateAsync({
+            await createDriverAction({
                 full_name: name,
                 phone: phone,
                 email: email || undefined,
@@ -43,7 +53,8 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
                 license_number: license || undefined,
                 remarks: remarks || undefined
             });
-            toast.success('Driver added successfully');
+            toast.success('Driver added successfully with default password "test123"');
+            queryClient.invalidateQueries({ queryKey: ['drivers'] });
             onOpenChange(false);
             // Reset
             setName('');
@@ -54,6 +65,8 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
             setRemarks('');
         } catch (error: any) {
             toast.error('Failed to add driver: ' + error.message);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -67,6 +80,7 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
                     </DialogTitle>
                     <DialogDescription>
                         Complete profile details for the new driver.
+                        Default password will be set to: <strong>test123</strong>
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -141,8 +155,8 @@ export function AddDriverModal({ open, onOpenChange }: AddDriverModalProps) {
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createDriver.isPending}>
-                            {createDriver.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Add Driver
                         </Button>
                     </DialogFooter>

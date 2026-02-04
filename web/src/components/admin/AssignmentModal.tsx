@@ -23,7 +23,7 @@ import { User, Truck, MapPin, ArrowRight, Loader2 } from 'lucide-react';
 import type { Trip, Profile } from '@/types/database';
 
 interface AssignmentModalProps {
-    trip: (Trip & { client: Profile }) | null;
+    trip: (Trip & { client?: Profile }) | null;
     onClose: () => void;
 }
 

@@ -9,8 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Loader2, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { ClientAuthForm } from './ClientAuthForm';
+// Tabs imports removed as they are no longer used
 
 export function LoginForm() {
+    const [mode, setMode] = useState<'client' | 'admin' | 'driver'>('client');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -62,111 +65,101 @@ export function LoginForm() {
         }
     };
 
-    const signInAsTestClient = async () => {
-        await performTestLogin('client@example.com', 'client123');
-    };
-
-    const signInAsTestAdmin = async () => {
-        await performTestLogin('admin@example.com', 'password123');
-    };
-
-    const signInAsTestDriver = async () => {
-        await performTestLogin('driver@example.com', 'password123');
-    };
-
     const performTestLogin = async (e: string, p: string) => {
         setEmail(e);
         setPassword(p);
         setLoading(true);
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: e,
-            password: p,
-        });
-
-        if (error) {
-            toast.error('Test login failed: ' + error.message);
-            setLoading(false);
-        } else if (data.user) {
-            toast.success('Signed in successfully');
-            await handleRedirect(data.user.id);
-        }
+        const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+        if (error) { toast.error('Test login failed: ' + error.message); setLoading(false); }
+        else if (data.user) { toast.success('Signed in successfully'); await handleRedirect(data.user.id); }
     };
+    const signInAsTestClient = () => performTestLogin('client@example.com', 'client123');
+    const signInAsTestAdmin = () => performTestLogin('admin@example.com', 'password123');
+    const signInAsTestDriver = () => performTestLogin('driver@example.com', 'password123');
+
 
     return (
         <Card className="w-full max-w-md mx-auto border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader className="space-y-1">
+            <CardHeader className="space-y-1 pb-4">
                 <CardTitle className="text-2xl font-bold flex items-center gap-2">
                     <KeyRound className="h-6 w-6 text-primary" />
-                    Sign In
+                    {mode === 'client' ? 'Client Login' :
+                        mode === 'admin' ? 'Admin Login' : 'Driver Login'}
                 </CardTitle>
                 <CardDescription>
-                    Enter your credentials to access the logistics platform
+                    {mode === 'client'
+                        ? 'Enter your mobile number to access your dashboard'
+                        : 'Enter your credentials to access the system'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="name@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Sign In
-                    </Button>
-                </form>
+                {mode === 'client' ? (
+                    <ClientAuthForm />
+                ) : (
+                    <form onSubmit={handleLogin} className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Sign In
+                        </Button>
+                    </form>
+                )}
 
-                <div className="relative">
+                <div className="relative pt-2">
                     <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-border" />
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                    </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                    <Button
-                        variant="outline"
-                        className="w-full text-xs h-9 border-dashed border-accent/50 hover:bg-accent/10"
-                        onClick={signInAsTestClient}
-                        disabled={loading}
-                    >
-                        Test Client
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full text-xs h-9 border-dashed border-blue-500/50 hover:bg-blue-500/10"
-                        onClick={signInAsTestAdmin}
-                        disabled={loading}
-                    >
-                        Test Admin
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full text-xs h-9 border-dashed border-green-500/50 hover:bg-green-500/10"
-                        onClick={signInAsTestDriver}
-                        disabled={loading}
-                    >
-                        Test Driver
-                    </Button>
+                <div className="flex flex-col gap-2">
+                    {mode === 'client' ? (
+                        <>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button variant="outline" onClick={() => setMode('admin')} disabled={loading}>
+                                    Login as Admin
+                                </Button>
+                                <Button variant="outline" onClick={() => setMode('driver')} disabled={loading}>
+                                    Login as Driver
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <Button variant="ghost" onClick={() => setMode('client')} className="w-full" disabled={loading}>
+                            Back to Client Login
+                        </Button>
+                    )}
                 </div>
+
+                {process.env.NODE_ENV === 'development' && (
+                    <div className="text-xs text-center text-muted-foreground mt-4">
+                        <p className="mb-1">Dev Tools</p>
+                        <div className="flex justify-center gap-2">
+                            <button onClick={signInAsTestClient} className="hover:underline">Client</button>
+                            <button onClick={signInAsTestAdmin} className="hover:underline">Admin</button>
+                            <button onClick={signInAsTestDriver} className="hover:underline">Driver</button>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
